@@ -100,10 +100,11 @@ def main():
     )
     print("2. SAYA PUSING menghasilkan MUQSBDYSJF.")
     print(
-        "Catatan: Determinan kunci soal pertama adalah 3 dan tidak "
-        "memiliki invers modulo 26. Ini tidak menghalangi enkripsi, "
-        "tetapi kunci tersebut tidak dapat digunakan untuk dekripsi "
-        "Hill Cipher standar secara unik."
+        "Catatan: Determinan kunci soal pertama adalah 3 dan "
+        "gcd(3, 26) = 1; determinan kunci soal kedua adalah "
+        "-121 ≡ 9 (mod 26) dan gcd(9, 26) = 1. Karena kedua "
+        "determinan memiliki invers modulo 26, kedua kunci dapat "
+        "digunakan untuk enkripsi maupun dekripsi Hill Cipher."
     )
 
 
