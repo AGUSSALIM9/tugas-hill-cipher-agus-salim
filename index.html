@@ -610,7 +610,7 @@
         <li><strong>HILL CIPHER TIDAK SULIT</strong> menghasilkan cipherteks <strong>FMRDGCNZSHNKPGCWKVYV</strong>.</li>
         <li><strong>SAYA PUSING</strong> menghasilkan cipherteks <strong>MUQSBDYSJF</strong>.</li>
       </ol>
-      <p class="note">Catatan: determinan kunci soal pertama adalah 3 dan tidak memiliki invers modulo 26. Ini tidak menghalangi enkripsi, tetapi kunci tersebut tidak dapat digunakan untuk dekripsi Hill Cipher standar secara unik.</p>
+      <p class="note">Catatan: determinan kunci soal pertama adalah 5 × 3 − 6 × 2 = 3, dengan gcd(3, 26) = 1. Determinan kunci soal kedua adalah 5 × 3 − 8 × 17 = −121 ≡ 9 (mod 26), dengan gcd(9, 26) = 1. Karena kedua determinan memiliki invers modulo 26, kedua kunci valid untuk enkripsi dan dekripsi Hill Cipher.</p>
     </section>
   </main>
   <footer>Hill Cipher 2 × 2 · Setiap pasangan huruf dihitung sebagai satu blok.</footer>
