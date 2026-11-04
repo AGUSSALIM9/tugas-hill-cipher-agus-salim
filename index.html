@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a43">
+  <title>Hill Cipher — Enkripsi</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b4d;
+      --muted: #62748a;
+      --paper: #ffffff;
+      --canvas: #f3f6fa;
+      --line: #e2e8f0;
+      --blue: #176b87;
+      --blue-dark: #102a43;
+      --teal-light: #e7f5f4;
+      --gold: #f2b84b;
+      --shadow: 0 16px 40px rgb(16 42 67 / 8%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 48px 24px 54px;
+      background: var(--blue-dark);
+      color: #fff;
+    }
+
+    .hero::after {
+      position: absolute;
+      top: -150px;
+      right: -80px;
+      width: 420px;
+      height: 420px;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 42px rgb(255 255 255 / 4%),
+                  0 0 0 90px rgb(255 255 255 / 3%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .hero-inner, main {
+      width: min(980px, 100%);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #b7dfe7;
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      content: "";
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: -.045em;
+      line-height: 1.12;
+    }
+
+    .hero p {
+      max-width: 610px;
+      margin: 0;
+      color: #d3e0eb;
+      font-size: 1.02rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .hero-meta span {
+      padding: 6px 11px;
+      border: 1px solid rgb(255 255 255 / 18%);
+      border-radius: 999px;
+      color: #edf5f8;
+      font-size: .83rem;
+    }
+
+    .student-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 22px;
+      max-width: 680px;
+      margin-top: 21px;
+      padding: 13px 16px;
+      border: 1px solid rgb(255 255 255 / 16%);
+      border-radius: 12px;
+      background: rgb(255 255 255 / 6%);
+    }
+
+    .student-info span {
+      color: #d3e0eb;
+      font-size: .9rem;
+    }
+
+    .student-info strong {
+      margin-right: 5px;
+      color: #fff;
+    }
+
+    main { padding: 30px 20px 64px; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 6px 0 18px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: -.025em;
+    }
+
+    .section-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+      transition: background .15s, transform .15s;
+    }
+
+    .button:hover { background: #12566d; transform: translateY(-1px); }
+    .button.secondary { border: 1px solid var(--line); background: #fff; color: var(--ink); }
+    .button.secondary:hover { background: #f8fafc; }
+
+    .answer-card, .tool-card, .conclusion {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .answer-card { margin-bottom: 20px; overflow: hidden; }
+
+    .answer-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .question-number {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--blue);
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .answer-head h3 { margin: 0; font-size: 1.22rem; }
+    .answer-head p { margin: 5px 0 0; color: var(--muted); font-size: .91rem; }
+
+    .result-pill {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--teal-light);
+      color: #12616c;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .92rem;
+      font-weight: 800;
+      letter-spacing: .045em;
+    }
+
+    .answer-body { padding: 20px 24px 24px; }
+
+    .data-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 17px;
+    }
+
+    .data-box {
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfcfe;
+    }
+
+    .data-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: .75rem;
+      font-weight: 750;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .data-value {
+      overflow-wrap: anywhere;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .formula {
+      margin: 0 0 16px;
+      padding: 11px 14px;
+      border-left: 3px solid var(--gold);
+      border-radius: 0 9px 9px 0;
+      background: #fff8e9;
+      color: #5e4b26;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .88rem;
+    }
+
+    .pairs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 20px;
+    }
+
+    .pair-chip {
+      padding: 4px 9px;
+      border: 1px solid #dbe8ee;
+      border-radius: 7px;
+      background: #f4f9fb;
+      color: #245c70;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .83rem;
+      font-weight: 700;
+    }
+
+    .block-list { display: grid; gap: 12px; }
+
+    .block {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .block h4 { margin: 0 0 9px; font-size: .96rem; }
+
+    .block p {
+      margin: 5px 0;
+      color: #40536a;
+      font-size: .89rem;
+    }
+
+    .math {
+      overflow-wrap: anywhere;
+      font-family: "Cascadia Code", Consolas, monospace;
+    }
+
+    .block-result {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--teal-light);
+      color: #12616c;
+      font-weight: 800;
+    }
+
+    .cipher-final {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 17px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--blue-dark);
+      color: #fff;
+    }
+
+    .cipher-final span:first-child { color: #c5d5e3; font-size: .9rem; }
+    .cipher-final strong { font-family: "Cascadia Code", Consolas, monospace; letter-spacing: .06em; }
+
+    .tool-card { margin: 26px 0 20px; padding: 22px 24px; }
+    .tool-card h2 { font-size: 1.2rem; }
+    .tool-card > p { margin: 5px 0 18px; color: var(--muted); font-size: .9rem; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.5fr) repeat(4, minmax(68px, .55fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      color: #506278;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .field input:focus { border-color: var(--blue); outline: 3px solid rgb(23 107 135 / 14%); }
+    .form-actions { display: flex; gap: 9px; margin-top: 14px; }
+    .error { min-height: 1.5em; margin: 8px 0 0; color: #b42318; font-size: .88rem; }
+    .custom-output { margin-top: 20px; }
+    .custom-output:empty { display: none; }
+
+    .conclusion {
+      padding: 20px 24px;
+      border-color: #d9e8e9;
+      background: #f7fbfa;
+      box-shadow: none;
+    }
+
+    .conclusion h2 { margin-bottom: 9px; font-size: 1.15rem; }
+    .conclusion ol { margin: 0; padding-left: 22px; }
+    .conclusion li { margin: 4px 0; }
+    .note { margin: 12px 0 0; color: var(--muted); font-size: .86rem; }
+
+    footer { padding: 0 20px 28px; color: var(--muted); font-size: .82rem; text-align: center; }
+
+    .flowchart-card {
+      margin: 26px 0 20px;
+      padding: 22px 24px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .flowchart-card h2 { font-size: 1.2rem; }
+    .flowchart-card > p { margin: 5px 0 18px; color: var(--muted); font-size: .9rem; }
+    .flowchart-scroll { overflow-x: auto; }
+    .flowchart { display: block; width: min(100%, 760px); min-width: 620px; height: auto; margin: 0 auto; }
+    .flowchart text { fill: var(--ink); font-family: Inter, "Segoe UI", Arial, sans-serif; font-size: 16px; text-anchor: middle; }
+    .flowchart .small-text { font-size: 14px; }
+    .flowchart .connector { fill: none; stroke: #718096; stroke-width: 2; marker-end: url(#arrowhead); }
+    .flowchart .process { fill: #f4f9fb; stroke: var(--blue); stroke-width: 2; }
+    .flowchart .decision { fill: #fff8e9; stroke: #c58a16; stroke-width: 2; }
+    .flowchart .terminator { fill: var(--blue-dark); stroke: var(--blue-dark); stroke-width: 2; }
+    .flowchart .terminator-text { fill: #fff; font-weight: 700; }
+    .flowchart .branch-label { fill: var(--muted); font-size: 13px; font-weight: 700; }
+
+    @media (max-width: 700px) {
+      .hero { padding: 36px 20px 42px; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .answer-head { flex-direction: column; padding: 19px; }
+      .answer-body { padding: 17px 19px 20px; }
+      .data-row { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: repeat(4, minmax(55px, 1fr)); }
+      .field:first-child { grid-column: 1 / -1; }
+      .tool-card { padding: 19px; }
+      .flowchart-card { padding: 19px; }
+    }
+
+    @media (max-width: 420px) {
+      .form-grid { grid-template-columns: repeat(2, minmax(70px, 1fr)); }
+      .field:first-child { grid-column: 1 / -1; }
+      .cipher-final { align-items: start; flex-direction: column; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .hero { padding: 22px; background: #fff; color: var(--ink); }
+      .hero p, .eyebrow { color: var(--muted); }
+      .hero-meta span { border-color: var(--line); color: var(--ink); }
+      .hero::after, .section-heading button, .tool-card, footer { display: none !important; }
+      main { width: 100%; padding: 12px 0; }
+      .answer-card, .conclusion { box-shadow: none; break-inside: avoid; }
+      .flowchart-card { box-shadow: none; break-inside: avoid; }
+      .flowchart { width: 100%; min-width: 0; }
+      .flowchart-scroll { overflow: visible; }
+      .block { break-inside: avoid; }
+      .cipher-final { background: #edf3f7; color: var(--ink); }
+      .cipher-final span:first-child { color: var(--muted); }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Tugas Kriptografi</span>
+      <h1>Enkripsi Hill Cipher</h1>
+      <p>Penjelasan dan penyelesaian lengkap enkripsi Hill Cipher 2 × 2, dihitung per pasangan huruf.</p>
+      <div class="student-info" aria-label="Identitas mahasiswa">
+        <span><strong>Nama:</strong> AGUS SALIM</span>
+        <span><strong>NIM:</strong> 524012001</span>
+        <span><strong>Prodi:</strong> ILMU KOMPUTER</span>
+        <span><strong>Tugas:</strong> 3</span>
+      </div>
+      <div class="hero-meta" aria-label="Informasi metode">
+        <span>Modulus 26</span>
+        <span>A = 0, B = 1, …, Z = 25</span>
+        <span>Rumus C = K × P (mod 26)</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section aria-labelledby="answers-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="answers-title">Jawaban tugas</h2>
+          <p>Semua tahapan perhitungan untuk kedua soal.</p>
+        </div>
+        <button class="button secondary" id="print-button" type="button">Cetak / Simpan PDF</button>
+      </div>
+      <div id="answers"></div>
+    </section>
+
+    <section class="flowchart-card" aria-labelledby="flowchart-title">
+      <h2 id="flowchart-title">Flowchart proses enkripsi</h2>
+      <p>Alur program Hill Cipher 2 × 2, mulai dari validasi input hingga menghasilkan cipherteks.</p>
+      <div class="flowchart-scroll">
+        <svg class="flowchart" viewBox="0 0 960 1170" role="img" aria-labelledby="flowchart-svg-title flowchart-svg-desc">
+          <title id="flowchart-svg-title">Flowchart enkripsi Hill Cipher 2 × 2</title>
+          <desc id="flowchart-svg-desc">Program menerima plainteks dan matriks kunci, memvalidasi input, menyiapkan teks, memproses setiap pasangan huruf dengan perkalian matriks modulo 26, lalu menggabungkan hasil menjadi cipherteks.</desc>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#718096"></path>
+            </marker>
+          </defs>
+
+          <path class="connector" d="M480 75 V105"></path>
+          <path class="connector" d="M480 165 V195"></path>
+          <path class="connector" d="M480 285 V320"></path>
+          <path class="connector" d="M480 405 V445"></path>
+          <path class="connector" d="M480 535 V570"></path>
+          <path class="connector" d="M480 640 V680"></path>
+          <path class="connector" d="M480 750 V785"></path>
+          <path class="connector" d="M480 875 V915"></path>
+          <path class="connector" d="M480 1005 V1045"></path>
+          <path class="connector" d="M480 1115 V1135"></path>
+
+          <path class="connector" d="M395 360 H185 V475"></path>
+          <path class="connector" d="M185 545 V135 H320"></path>
+          <path class="connector" d="M565 490 H700 V535"></path>
+          <path class="connector" d="M700 605 V625 H630"></path>
+          <path class="connector" d="M565 960 H800 V715 H630"></path>
+
+          <ellipse class="terminator" cx="480" cy="50" rx="105" ry="25"></ellipse>
+          <text class="terminator-text" x="480" y="56">Mulai</text>
+
+          <rect class="process" x="330" y="105" width="300" height="60" rx="12"></rect>
+          <text x="480" y="131">
+            <tspan x="480">Masukkan plainteks</tspan>
+            <tspan x="480" dy="21">dan matriks kunci K (2 × 2)</tspan>
+          </text>
+
+          <rect class="process" x="330" y="195" width="300" height="90" rx="12"></rect>
+          <text x="480" y="222">
+            <tspan x="480">Ubah ke huruf kapital</tspan>
+            <tspan x="480" dy="21">dan hilangkan spasi</tspan>
+            <tspan x="480" dy="21">Periksa format plainteks dan kunci</tspan>
+          </text>
+
+          <polygon class="decision" points="480,320 565,362 480,405 395,362"></polygon>
+          <text x="480" y="357">
+            <tspan x="480">Input valid?</tspan>
+            <tspan class="small-text" x="480" dy="19">A–Z, tidak kosong, kunci bilangan bulat</tspan>
+          </text>
+          <text class="branch-label" x="282" y="349">Tidak</text>
+          <text class="branch-label" x="505" y="428">Ya</text>
+
+          <rect class="process" x="70" y="475" width="230" height="70" rx="12"></rect>
+          <text x="185" y="503">
+            <tspan x="185">Tampilkan pesan kesalahan</tspan>
+            <tspan x="185" dy="21">dan minta perbaikan input</tspan>
+          </text>
+
+          <polygon class="decision" points="480,445 565,490 480,535 395,490"></polygon>
+          <text x="480" y="496">Jumlah huruf ganjil?</text>
+          <text class="branch-label" x="616" y="478">Ya</text>
+          <text class="branch-label" x="505" y="558">Tidak</text>
+
+          <rect class="process" x="585" y="535" width="230" height="70" rx="12"></rect>
+          <text x="700" y="564">
+            <tspan x="700">Tambahkan huruf X</tspan>
+            <tspan x="700" dy="21">di akhir plainteks</tspan>
+          </text>
+
+          <rect class="process" x="330" y="570" width="300" height="70" rx="12"></rect>
+          <text x="480" y="598">
+            <tspan x="480">Bagi teks menjadi pasangan huruf</tspan>
+            <tspan x="480" dy="21">dan ubah A=0, …, Z=25</tspan>
+          </text>
+
+          <rect class="process" x="330" y="680" width="300" height="70" rx="12"></rect>
+          <text x="480" y="708">
+            <tspan x="480">Ambil pasangan P berikutnya</tspan>
+            <tspan x="480" dy="21">Hitung C = K × P (mod 26)</tspan>
+          </text>
+
+          <rect class="process" x="330" y="785" width="300" height="90" rx="12"></rect>
+          <text x="480" y="812">
+            <tspan x="480">Ubah hasil angka modulo 26</tspan>
+            <tspan x="480" dy="21">kembali menjadi dua huruf</tspan>
+            <tspan x="480" dy="21">Tambahkan ke cipherteks sementara</tspan>
+          </text>
+
+          <polygon class="decision" points="480,915 565,960 480,1005 395,960"></polygon>
+          <text x="480" y="966">Masih ada pasangan?</text>
+          <text class="branch-label" x="690" y="948">Ya</text>
+          <text class="branch-label" x="505" y="1028">Tidak</text>
+
+          <rect class="process" x="330" y="1045" width="300" height="70" rx="12"></rect>
+          <text x="480" y="1074">
+            <tspan x="480">Gabungkan hasil semua blok</tspan>
+            <tspan x="480" dy="21">dan tampilkan cipherteks</tspan>
+          </text>
+
+          <ellipse class="terminator" cx="480" cy="1145" rx="105" ry="25"></ellipse>
+          <text class="terminator-text" x="480" y="1151">Selesai</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="tool-card" aria-labelledby="calculator-title">
+      <h2 id="calculator-title">Coba enkripsi sendiri</h2>
+      <p>Masukkan plainteks dan empat angka kunci. Spasi akan diabaikan; jika jumlah huruf ganjil, program menambahkan X.</p>
+      <form id="cipher-form" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="custom-plaintext">Plainteks (huruf A–Z)</label>
+            <input id="custom-plaintext" name="plaintext" type="text" placeholder="Contoh: BELAJAR KRIPTOGRAFI" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="k00">Kunci K₁₁</label>
+            <input id="k00" name="k00" type="number" value="5" step="1" required>
+          </div>
+          <div class="field">
+            <label for="k01">Kunci K₁₂</label>
+            <input id="k01" name="k01" type="number" value="6" step="1" required>
+          </div>
+          <div class="field">
+            <label for="k10">Kunci K₂₁</label>
+            <input id="k10" name="k10" type="number" value="2" step="1" required>
+          </div>
+          <div class="field">
+            <label for="k11">Kunci K₂₂</label>
+            <input id="k11" name="k11" type="number" value="3" step="1" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="button" type="submit">Hitung enkripsi</button>
+          <button class="button secondary" id="reset-button" type="reset">Bersihkan</button>
+        </div>
+        <p class="error" id="form-error" role="alert"></p>
+      </form>
+      <div class="custom-output" id="custom-output" aria-live="polite"></div>
+    </section>
+
+    <section class="conclusion" aria-labelledby="conclusion-title">
+      <h2 id="conclusion-title">Kesimpulan</h2>
+      <ol>
+        <li><strong>HILL CIPHER TIDAK SULIT</strong> menghasilkan cipherteks <strong>FMRDGCNZSHNKPGCWKVYV</strong>.</li>
+        <li><strong>SAYA PUSING</strong> menghasilkan cipherteks <strong>MUQSBDYSJF</strong>.</li>
+      </ol>
+      <p class="note">Catatan: determinan kunci soal pertama adalah 3 dan tidak memiliki invers modulo 26. Ini tidak menghalangi enkripsi, tetapi kunci tersebut tidak dapat digunakan untuk dekripsi Hill Cipher standar secara unik.</p>
+    </section>
+  </main>
+  <footer>Hill Cipher 2 × 2 · Setiap pasangan huruf dihitung sebagai satu blok.</footer>
+
+  <script>
+    "use strict";
+
+    const examples = [
+      { title: "HILL CIPHER TIDAK SULIT", plaintext: "HILL CIPHER TIDAK SULIT", key: [[5, 6], [2, 3]] },
+      { title: "SAYA PUSING", plaintext: "SAYA PUSING", key: [[5, 8], [17, 3]] }
+    ];
+
+    function prepareText(plaintext) {
+      const text = plaintext.toUpperCase().replace(/\s/g, "");
+      if (!/^[A-Z]+$/.test(text)) {
+        throw new Error("Plainteks harus berisi huruf A–Z dan spasi saja.");
+      }
+      return text.length % 2 === 0 ? text : text + "X";
+    }
+
+    function calculate(plaintext, key) {
+      if (!Array.isArray(key) || key.length !== 2 ||
+          key.some(row => !Array.isArray(row) || row.length !== 2 ||
+            row.some(value => !Number.isInteger(value)))) {
+        throw new Error("Kunci harus berupa matriks 2 × 2 berisi bilangan bulat.");
+      }
+
+      const prepared = prepareText(plaintext);
+      const blocks = [];
+      for (let index = 0; index < prepared.length; index += 2) {
+        const pair = prepared.slice(index, index + 2);
+        const first = pair.charCodeAt(0) - 65;
+        const second = pair.charCodeAt(1) - 65;
+        const products = [
+          key[0][0] * first + key[0][1] * second,
+          key[1][0] * first + key[1][1] * second
+        ];
+        const modulo = products.map(value => ((value % 26) + 26) % 26);
+        const encrypted = modulo.map(value => String.fromCharCode(value + 65)).join("");
+        blocks.push({ pair, first, second, products, modulo, encrypted });
+      }
+      return {
+        prepared, blocks, ciphertext: blocks.map(block => block.encrypted).join("")
+      };
+    }
+
+    function renderSolution(example, number) {
+      const result = calculate(example.plaintext, example.key);
+      const blocks = result.blocks.map((block, index) => `
+        <article class="block">
+          <h4>Blok ${index + 1} (${block.pair})</h4>
+          <p>Indeks plainteks: ${block.pair[0]} = ${block.first}, ${block.pair[1]} = ${block.second}.</p>
+          <p class="math">C = K × P (mod 26) = [[${example.key[0].join(", ")}], [${example.key[1].join(", ")}]] × [[${block.first}], [${block.second}]]</p>
+          <p class="math">= [[(${example.key[0][0]} × ${block.first}) + (${example.key[0][1]} × ${block.second})], [(${example.key[1][0]} × ${block.first}) + (${example.key[1][1]} × ${block.second})]]</p>
+          <p class="math">= [[${block.products[0]}], [${block.products[1]}]]</p>
+          <p>Modulo 26: ${block.products[0]} mod 26 = ${block.modulo[0]}; ${block.products[1]} mod 26 = ${block.modulo[1]}.</p>
+          <span class="block-result">Hasil huruf: ${block.modulo[0]} = ${block.encrypted[0]}, ${block.modulo[1]} = ${block.encrypted[1]} → ${block.encrypted}</span>
+        </article>`).join("");
+
+      return `
+        <article class="answer-card">
+          <header class="answer-head">
+            <div>
+              <span class="question-number">Soal ${number}</span>
+              <h3>${example.title}</h3>
+              <p>Enkripsi menggunakan matriks kunci 2 × 2.</p>
+            </div>
+            <div class="result-pill">${result.ciphertext}</div>
+          </header>
+          <div class="answer-body">
+            <div class="data-row">
+              <div class="data-box"><span class="data-label">Plainteks</span><span class="data-value">${example.plaintext}</span></div>
+              <div class="data-box"><span class="data-label">Matriks kunci K</span><span class="data-value">[[${example.key[0].join(", ")}], [${example.key[1].join(", ")}]]</span></div>
+            </div>
+            <p class="formula">Rumus: C = K × P (mod 26) · Proses: ${result.prepared}</p>
+            <span class="data-label">Pembagian pasangan huruf</span>
+            <div class="pairs">${result.blocks.map(block => `<span class="pair-chip">${block.pair}</span>`).join("")}</div>
+            <div class="block-list">${blocks}</div>
+            <div class="cipher-final"><span>Cipherteks soal ${number}</span><strong>${result.ciphertext}</strong></div>
+          </div>
+        </article>`;
+    }
+
+    function renderCustomResult(plaintext, key) {
+      const result = calculate(plaintext, key);
+      const example = { title: plaintext.trim().toUpperCase(), plaintext: plaintext.trim().toUpperCase(), key };
+      return renderSolution(example, "Kustom");
+    }
+
+    document.getElementById("answers").innerHTML =
+      examples.map((example, index) => renderSolution(example, index + 1)).join("");
+
+    document.getElementById("print-button").addEventListener("click", () => window.print());
+
+    const form = document.getElementById("cipher-form");
+    const error = document.getElementById("form-error");
+    const output = document.getElementById("custom-output");
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      error.textContent = "";
+      output.innerHTML = "";
+      try {
+        const plaintext = document.getElementById("custom-plaintext").value;
+        const keyFields = ["k00", "k01", "k10", "k11"];
+        if (keyFields.some(id => document.getElementById(id).value.trim() === "")) {
+          throw new Error("Semua nilai kunci harus diisi.");
+        }
+        const key = [
+          [Number(document.getElementById("k00").value), Number(document.getElementById("k01").value)],
+          [Number(document.getElementById("k10").value), Number(document.getElementById("k11").value)]
+        ];
+        if (key.some(row => row.some(value => !Number.isSafeInteger(value)))) {
+          throw new Error("Semua nilai kunci harus berupa bilangan bulat yang valid.");
+        }
+        output.innerHTML = renderCustomResult(plaintext, key);
+      } catch (exception) {
+        error.textContent = exception.message;
+      }
+    });
+
+    form.addEventListener("reset", () => {
+      error.textContent = "";
+      output.innerHTML = "";
+    });
+  </script>
+</body>
+</html>
